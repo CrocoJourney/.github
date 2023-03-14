@@ -2,7 +2,7 @@
 
 name: CI
 
-# charge le token secret 
+# charge le token secret
 env:
   TOKEN: ${{ secrets.TOKEN }}
 
@@ -27,11 +27,16 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      # se deplace a la racine du projet
+      - name: se deplace a la racine du projet
+        run: cd ..
       # Runs a single command using the runners shell
       - name: install node dependencies
         run: npm install
+
       - name: se deplace dans le dossier stats
         run: cd stats
+
       # Runs a set of commands using the runners shell
       - name: genere les stats de la partie frontend
         run: node index.js frontend
