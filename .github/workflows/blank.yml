@@ -33,6 +33,8 @@ jobs:
       # Runs a single command using the runners shell
       - name: install node dependencies
         run: |
+          pwd
+          ls -a
           cd ../stats
           npm install
 
