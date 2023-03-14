@@ -40,12 +40,13 @@ jobs:
 
       - name: genere les stats
         run: |
+          cd stats
           node index.js frontend
           node index.js backend
 
       - name: Commit to the repo
         run: |
-          cd ../profile
+          cd profile
           git config --global user.name "L3PO"
           git config --global user.email "bot@antoninrousseau.fr"
           git pull
