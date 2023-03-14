@@ -15,34 +15,35 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: profile
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # se deplace a la racine du projet
-      - name: se deplace a la racine du projet
-        run: cd ..
       # Runs a single command using the runners shell
       - name: install node dependencies
-        run: npm install
+        run: |
+          cd ..
+          npm install
 
-      - name: se deplace dans le dossier stats
-        run: cd stats
-
-      # Runs a set of commands using the runners shell
-      - name: genere les stats de la partie frontend
-        run: node index.js frontend
-
-      - name: genere les stats de la partie backend
-        run: node index.js backend
+      - name: genere les stats
+        run: |
+          cd ../stats
+          node index.js frontend
+          node index.js backend
 
       - name: Commit to the repo
         run: |
