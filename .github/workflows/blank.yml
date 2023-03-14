@@ -35,12 +35,11 @@ jobs:
         run: |
           pwd
           ls -a
-          cd ../stats
+          cd stats
           npm install
 
       - name: genere les stats
         run: |
-          cd ../stats
           node index.js frontend
           node index.js backend
 
