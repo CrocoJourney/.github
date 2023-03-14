@@ -2,6 +2,10 @@
 
 name: CI
 
+# charge le token secret 
+env:
+  TOKEN: ${{ secrets.TOKEN }}
+
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
@@ -24,11 +28,24 @@ jobs:
       - uses: actions/checkout@v3
 
       # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
+      - name: install node dependencies
+        run: npm install
+      - name: se deplace dans le dossier stats
+        run: cd stats
       # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: genere les stats de la partie frontend
+        run: node index.js frontend
+
+      - name: genere les stats de la partie backend
+        run: node index.js backend
+
+      - name: Commit to the repo
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          cd ../profile
+          git config --global user.name "L3PO"
+          git config --global user.email "bot@antoninrousseau.fr"
+          git pull
+          git add .
+          # "echo" returns true so the build succeeds, even if no changed files
+          git commit -m 'Update generated files' || echo
+          git push
