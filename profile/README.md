@@ -8,3 +8,6 @@ CrocoJourney est un site web qui met en relation des conducteurs et des passager
 ![Frontend](https://raw.githubusercontent.com/CrocoJourney/.github/main/profile/frontend.png)
 <br>
 ![Backend](https://raw.githubusercontent.com/CrocoJourney/.github/main/profile/backend.png)
+
+
+> D'autres graphiques sont disponibles dans le dossier [profile](https://github.com/CrocoJourney/.github/tree/main/profile)
