@@ -12,6 +12,7 @@
   "dependencies": {
     "chart.js": "^3.9.1",
     "chartjs-node-canvas": "^4.1.6",
+    "dotenv": "^16.0.3",
     "octokit": "^2.0.14",
     "progress": "^2.0.3"
   }
