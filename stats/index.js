@@ -41,7 +41,7 @@ const mails = JSON.parse(fs.readFileSync('./users.json', 'utf8'));
 function findNameByMail(db, mail) {
   // un user a plusieurs mails
   const user = db.find((user) => user.mails.includes(mail));
-  return user.name;
+  return user?.name;
 }
 let activity = new Map();
 // loading bar
@@ -56,6 +56,10 @@ const bar = new ProgressBar('Loading :bar :current/:total :percent :etas', {
 for await (const commit of commits.data) {
   bar.tick();
   const name = findNameByMail(mails, commit.commit.author.email);
+  if(name===undefined){
+    console.log("🤖 : ", commit.commit.author.email);
+    continue;
+  }
   const comment = commit.commit.message;
   if (comment.toLocaleLowerCase().includes('merge')) {
     continue;
