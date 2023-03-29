@@ -8,15 +8,22 @@
   },
   {
     "name": "Astrid Ganlonon",
-    "mails": ["astrid-heidi-irelya.ganlonon9@etu.univ-lorraine.fr"]
+    "mails": [
+      "astrid-heidi-irelya.ganlonon9@etu.univ-lorraine.fr"
+    ]
   },
   {
     "name": "Juliette Gaillemin",
-    "mails": ["juliette.gaillemin3@etu.univ-lorraine.fr"]
+    "mails": [
+      "juliette.gaillemin3@etu.univ-lorraine.fr"
+    ]
   },
   {
     "name": "Matthieu Galante",
-    "mails": ["matthieu.galante5@etu.univ-lorraine.fr"]
+    "mails": [
+      "matthieu.galante5@etu.univ-lorraine.fr",
+      "matthieu.galante@gmail.com"
+    ]
   },
   {
     "name": "Yoan Nougueruiz",
@@ -27,28 +34,37 @@
   },
   {
     "name": "Clement Joly",
-    "mails": ["118436575+aildontknow@users.noreply.github.com"]
-  },{
+    "mails": [
+      "118436575+aildontknow@users.noreply.github.com"
+    ]
+  },
+  {
     "name": "Phillip Tysoun",
-    "mails": ["philliptysoun@gmail.com"]
-  },{
-    "name":"Maxime Marcelin",
-    "mails":[
+    "mails": [
+      "philliptysoun@gmail.com"
+    ]
+  },
+  {
+    "name": "Maxime Marcelin",
+    "mails": [
       "70325779+Maximelego@users.noreply.github.com"
     ]
-  },{
-    "name":"Julien Feraux",
-    "mails":[
+  },
+  {
+    "name": "Julien Feraux",
+    "mails": [
       "56791765+julienferaux@users.noreply.github.com"
     ]
-  },{
-    "name":"Hugo Bien",
-    "mails":[
+  },
+  {
+    "name": "Hugo Bien",
+    "mails": [
       "70566686+HugoBien@users.noreply.github.com"
     ]
-  },{
-    "name":"Christen Saouma",
-    "mails":[
+  },
+  {
+    "name": "Christen Saouma",
+    "mails": [
       "saouma1u@etu.univ-lorraine.fr"
     ]
   }

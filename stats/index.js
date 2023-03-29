@@ -18,7 +18,6 @@ import {
 const octokit = new Octokit({
   auth: TOKEN,
 })
-
 const FOLDER = '../profile/'
 
 // get name in args
@@ -26,16 +25,15 @@ const args = process.argv.slice(2);
 
 let REPO_NAME = args[0] ?? 'frontend';
 
-const commits = await octokit.request('GET /repos/{owner}/{repo}/commits', {
+const commits = await octokit.paginate('GET /repos/{owner}/{repo}/commits', {
   owner: 'CrocoJourney',
   repo: REPO_NAME,
   sha: 'dev',
-  per_page: 10000
-})
+  per_page: 1000,
+  page: 1,
+});
+
 import fs from 'fs';
-import {
-  exit
-} from "process";
 const mails = JSON.parse(fs.readFileSync('./users.json', 'utf8'));
 
 function findNameByMail(db, mail) {
@@ -47,17 +45,17 @@ let activity = new Map();
 // loading bar
 import ProgressBar from 'progress';
 const bar = new ProgressBar('Loading :bar :current/:total :percent :etas', {
-  total: commits.data.length,
+  total: commits.length,
   width: 20,
   complete: '=',
   incomplete: '.',
 });
 
-for await (const commit of commits.data) {
+for await (const commit of commits) {
   bar.tick();
   const name = findNameByMail(mails, commit.commit.author.email);
   if(name===undefined){
-    console.log("🤖 : ", commit.commit.author.email);
+    console.log("🤖 euuuuuuuh : ", commit.commit.author.email+" \n");
     continue;
   }
   const comment = commit.commit.message;
