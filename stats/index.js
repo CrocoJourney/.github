@@ -69,9 +69,16 @@ for await (const commit of commits) {
   })
   // console.log(info.data.files);
   // sum all files additions
-  const additions = info.data.files.reduce((acc, file) => acc + file.additions, 0);
-  // sum all files deletions
-  const deletions = info.data.files.reduce((acc, file) => acc + file.deletions, 0);
+  // const additions = info.data.files.reduce((acc, file) => acc + file.additions, 0);
+  // // sum all files deletions
+  // const deletions = info.data.files.reduce((acc, file) => acc + file.deletions, 0);
+
+  // calcul les additions en evitant les packages.json et package-lock.json
+  const additions = info.data.files.filter((file) => !file.filename.includes('package')).reduce((acc, file) => acc + file.additions, 0);
+  // calcul les deletions en evitant les packages.json et package-lock.json
+  const deletions = info.data.files.filter((file) => !file.filename.includes('package')).reduce((acc, file) => acc + file.deletions, 0);
+
+
   // console.log(name, additions, deletions);
   if (activity.has(name)) {
     // activity.set(name,activity.get(name)+1);
