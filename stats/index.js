@@ -165,7 +165,7 @@ const genCalendar = async () => {
       type: "bar",
       data: {
         labels: commitsO.map((commit) =>
-          new Date(commit.date).toLocaleDateString()
+          new Date(commit.date).toLocaleDateString("fr-FR")
         ),
 
         datasets: [
@@ -199,13 +199,13 @@ const genCalendar = async () => {
               "\n premier commit le " +
               new Date(
                 commitsByUser.get(user)[0].commit.author.date
-              ).toLocaleDateString() +
+              ).toLocaleDateString("fr-FR") +
               "\n dernier commit le " +
               new Date(
                 commitsByUser.get(user)[
                   commitsByUser.get(user).length - 1
                 ].commit.author.date
-              ).toLocaleDateString() +
+              ).toLocaleDateString("fr-FR") +
               "\n nombre de commits : " +
               commitsByUser.get(user).length,
           },
