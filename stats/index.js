@@ -22,14 +22,6 @@ const args = process.argv.slice(2);
 
 let REPO_NAME = args[0] ?? "frontend";
 
-const commits = await octokit.paginate("GET /repos/{owner}/{repo}/commits", {
-  owner: "CrocoJourney",
-  repo: REPO_NAME,
-  sha: "dev",
-  per_page: 1000,
-  page: 1,
-});
-
 import fs from "fs";
 const mails = JSON.parse(fs.readFileSync("./users.json", "utf8"));
 
@@ -38,9 +30,260 @@ function findNameByMail(db, mail) {
   const user = db.find((user) => user.mails.includes(mail));
   return user?.name;
 }
+
+import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+const width = 800;
+const height = 600;
+const chartCallback = (ChartJS) => {};
+const chartJSNodeCanvas = new ChartJSNodeCanvas({
+  width,
+  height,
+  backgroundColour: "#ffffff",
+  chartCallback,
+});
+
+const genCalendar = async () => {
+  const commitsG = new Array();
+  const commitsFrontend = await octokit.paginate(
+    "GET /repos/{owner}/frontend/commits",
+    {
+      owner: "CrocoJourney",
+      sha: "dev",
+    }
+  );
+  for await (const commit of commitsFrontend) {
+    // recup les infos du commit via l'api
+    await octokit
+      .request("GET /repos/{owner}/{repo}/commits/{ref}", {
+        owner: "CrocoJourney",
+        repo: "frontend",
+        ref: commit.sha,
+      })
+      .then((response) => {
+        const comment = commit.commit.message;
+        if (comment.toLocaleLowerCase().includes("merge")) {
+          return;
+        }
+        // on regarde si au moins un fichier modifié est dans app ou src
+        const files = response.data.files;
+        const isApp = files.some((file) => file.filename.includes("app"));
+        const isSrc = files.some((file) => file.filename.includes("src"));
+        if (isApp || isSrc) {
+          // on ajoute le commit a la liste
+          commitsG.push(commit);
+        }
+      });
+  }
+  const commitsBackend = await octokit.paginate(
+    "GET /repos/{owner}/backend/commits",
+    {
+      owner: "CrocoJourney",
+      sha: "dev",
+    }
+  );
+  for await (const commit of commitsBackend) {
+    // recup les infos du commit via l'api
+    await octokit
+      .request("GET /repos/{owner}/{repo}/commits/{ref}", {
+        owner: "CrocoJourney",
+        repo: "backend",
+        ref: commit.sha,
+      })
+      .then((response) => {
+        const comment = commit.commit.message;
+        if (comment.toLocaleLowerCase().includes("merge")) {
+          return;
+        }
+
+        // on regarde si au moins un fichier modifié est dans app ou src
+        const files = response.data.files;
+        const isApp = files.some(
+          (file) =>
+            file.filename.includes("app") && !file.filename.includes("test")
+        );
+        const isSrc = files.some((file) => file.filename.includes("src"));
+        // no merge
+        if (isApp || isSrc) {
+          // on ajoute le commit a la liste
+          commitsG.push(commit);
+        }
+      });
+  }
+  // merge les commits
+  // const commitsG = commitsFrontend.concat(commitsBackend);
+
+  // trie les commits par date
+  commitsG.sort((a, b) => {
+    return new Date(a.commit.author.date) - new Date(b.commit.author.date);
+  });
+
+  // genere une liste par utilisateur avec le nombre de commits
+  const commitsByUser = new Map();
+  for (const commit of commitsG) {
+    const user = findNameByMail(mails, commit.commit.author.email);
+    if (commitsByUser.has(user)) {
+      commitsByUser.set(user, commitsByUser.get(user).concat(commit));
+    } else {
+      commitsByUser.set(user, new Array(commit));
+    }
+  }
+  for (const user of commitsByUser.keys()) {
+    console.log(user + " : " + commitsByUser.get(user).length);
+  }
+
+  const calendriersNames = new Array();
+
+  // pour chaque utilisateur
+  for (const user of commitsByUser.keys()) {
+    // merge les commits qui sont le même jour et mets comme valeur le nombre de commits
+    const commitsO = [];
+    let i = 0;
+    while (i < commitsByUser.get(user).length) {
+      let j = i + 1;
+      while (
+        j < commitsByUser.get(user).length &&
+        new Date(
+          commitsByUser.get(user)[i].commit.author.date
+        ).toLocaleDateString() ===
+          new Date(
+            commitsByUser.get(user)[j].commit.author.date
+          ).toLocaleDateString()
+      ) {
+        j++;
+      }
+      commitsO.push({
+        date: commitsByUser.get(user)[i].commit.author.date,
+        commits: j - i,
+      });
+      i = j;
+    }
+
+    console.log("Commits: " + commitsByUser.get(user).length);
+
+    // dessine un graphique en barres avec les commits par jour la hauteur de la barre est le nombre de commits
+    const configuration6 = {
+      type: "bar",
+      data: {
+        labels: commitsO.map((commit) =>
+          new Date(commit.date).toLocaleDateString()
+        ),
+
+        datasets: [
+          {
+            label: "Commits",
+            data: commitsO.map((commit) => commit.commits),
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: "right",
+          },
+          title: {
+            display: true,
+            // margin bottom
+            padding: {
+              up: 20,
+              bottom: 20,
+            },
+            margin: {
+              bottom: 20,
+            },
+            text:
+              "Calendrier des commits de : " +
+              user +
+              "\n premier commit le " +
+              new Date(
+                commitsByUser.get(user)[0].commit.author.date
+              ).toLocaleDateString() +
+              "\n dernier commit le " +
+              new Date(
+                commitsByUser.get(user)[
+                  commitsByUser.get(user).length - 1
+                ].commit.author.date
+              ).toLocaleDateString() +
+              "\n nombre de commits : " +
+              commitsByUser.get(user).length,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    };
+
+    const image6 = await chartJSNodeCanvas.renderToBuffer(configuration6);
+
+    // Write to a file
+    const filename = user.replace(/ /g, "_") + "_calendar.png";
+    // replace space by underscore
+    calendriersNames.push(filename.replace(/ /g, "_"));
+    fs.writeFileSync(FOLDER + filename, image6);
+  }
+
+  const canvasCalandar = createCanvas(
+    width * 3,
+    height * Math.ceil(calendriersNames.length / 3) + 100
+  );
+  const ctxCalendar = canvasCalandar.getContext("2d");
+
+  // dessine le titre sur fond blanc
+  ctxCalendar.fillStyle = "white";
+  ctxCalendar.fillRect(0, 0, width * 3, 100);
+  ctxCalendar.fillStyle = "black";
+  ctxCalendar.font = "40px Arial";
+  ctxCalendar.fillText(
+    "Calendriers des commits de chaque personne après filtrage",
+    10,
+    50
+  );
+  // dessine un rectangle blanc
+
+  // dessine les calendriers dans une grille de maniere a ce qu'il y ait 3 calendriers par ligne max
+  let x = 0;
+  let y = 100;
+  for (const calendrier of calendriersNames) {
+    console.log(x, " : ", y);
+    const image = await loadImage(FOLDER + calendrier);
+    ctxCalendar.drawImage(image, x, y, width, height);
+    x += width;
+    if (x >= width * 3) {
+      x = 0;
+      y += height;
+    }
+    // print the name of the user
+    console.log(calendrier);
+  }
+
+  console.log(calendriersNames.length + " calendriers générés");
+
+  const bufferCalendrier = canvasCalandar.toBuffer("image/png");
+  // Write to a file
+  fs.writeFileSync(FOLDER + "calendrier.png", bufferCalendrier);
+};
+
+if (args[0] == "calendar") {
+  await genCalendar();
+  exit(0);
+}
+
+const commits = await octokit.paginate("GET /repos/{owner}/{repo}/commits", {
+  owner: "CrocoJourney",
+  repo: REPO_NAME,
+  sha: "dev",
+  per_page: 1000,
+  page: 1,
+});
 let activity = new Map();
 // loading bar
 import ProgressBar from "progress";
+import { exit } from "process";
 const bar = new ProgressBar("Loading :bar :current/:total :percent :etas", {
   total: commits.length,
   width: 20,
@@ -72,19 +315,23 @@ for await (const commit of commits) {
   const additions = info.data.files
     .filter(
       (file) =>
-        !file.filename.includes("package") && !file.filename.includes("test") && (file.filename.includes("src") || file.filename.includes("app"))
+        !file.filename.includes("package") &&
+        !file.filename.includes("test") &&
+        (file.filename.includes("src") || file.filename.includes("app"))
     )
     .reduce((acc, file) => acc + file.additions, 0);
   // calcul les deletions en evitant les packages.json et package-lock.json et les fichier de test
   const deletions = info.data.files
     .filter(
       (file) =>
-        !file.filename.includes("package") && !file.filename.includes("test") && (file.filename.includes("src") || file.filename.includes("app"))
+        !file.filename.includes("package") &&
+        !file.filename.includes("test") &&
+        (file.filename.includes("src") || file.filename.includes("app"))
     )
-    .reduce((acc, file) => acc + file.deletions, 0);  
+    .reduce((acc, file) => acc + file.deletions, 0);
   // test si les additions et les deletions sont nulles
   if (additions === 0 && deletions === 0) {
-    console.log(name+" : commit vide après filtrage");
+    console.log(name + " : commit vide après filtrage");
     continue;
   }
 
@@ -149,16 +396,7 @@ activity.forEach((value, key) => {
 });
 
 // dessine un graphique
-import { ChartJSNodeCanvas } from "chartjs-node-canvas";
-const width = 800;
-const height = 600;
-const chartCallback = (ChartJS) => {};
-const chartJSNodeCanvas = new ChartJSNodeCanvas({
-  width,
-  height,
-  backgroundColour: "#ffffff",
-  chartCallback,
-});
+
 const configuration = {
   type: "bar",
   data: {
@@ -351,6 +589,7 @@ fs.writeFileSync(FOLDER + REPO_NAME + "_chart2.png", image2);
 // put image side by side
 import { createCanvas, loadImage } from "canvas";
 import { log } from "console";
+
 const canvas = createCanvas(width * 2, height);
 const ctx = canvas.getContext("2d");
 const image1 = await loadImage(FOLDER + REPO_NAME + "_chart.png");

@@ -43,6 +43,7 @@ jobs:
           cd stats
           node index.js frontend
           node index.js backend
+          node index.js calendar
 
       - name: Commit to the repo
         run: |

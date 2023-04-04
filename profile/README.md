@@ -12,5 +12,10 @@ CrocoJourney est un site web qui met en relation des conducteurs et des passager
 
 > Ces statistiques ignorent les fichiers package*,test*, fichiers de configuration de l'environnement de développement et de production etc..  Pour mettre en avant les contributions réelles  aux fonctionnalités de l'application.
 L'intégralité des contributions reste toujours visible dans l'onglet insights de chaque dépôt.
+Le code source de l'algo de génération de ces statistiques est disponible [ici](https://github.com/CrocoJourney/.github/blob/main/stats/index.js)
+
+### Calendrier
+
+![Calendrier](https://raw.githubusercontent.com/CrocoJourney/.github/main/profile/calendrier.png)
 
 > D'autres graphiques sont disponibles dans le dossier [profile](https://github.com/CrocoJourney/.github/tree/main/profile)
